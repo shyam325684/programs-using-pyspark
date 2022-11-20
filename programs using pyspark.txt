@@ -1,0 +1,68 @@
+Friends data friends by age:-
+===============================
+
+def parseLine(line):
+    fields = line.split(",")
+    age = int(fields[2])
+    numFriends = int(fields[3])
+    return (age,numFriends)
+
+from pyspark import SparkContext
+
+sc = SparkContext("local[*]","FriendsByAge")
+
+lines = sc.textFile("/user/syam/Donloads/frinds-data.csv")
+
+#(33,385) input
+
+rdd = lines.map(parseLine)
+#(33,(385,1)) output
+# In scala we used to acces the elements of the tuple using x._1,x._2
+# In python we used to acces the elements of the tuple using x[0],x[2]
+
+totalByAge= rdd.mapvalues(lambda x:(x,1)).reduceByKey(lambda x,y:(x[0]+y[0],x[1]+y[1]))
+
+averageByAge= totalByAge.mapvalues(lambda x: x[0]/x[1])
+
+result = averageByAge.collect()
+
+for a in result:
+    print(a)
+
+
+Movie rating:-
+==============
+
+from pyspark import SparkContext
+
+sc = SparkContext("local[*]","movie-data")
+
+lines = sc.textFile("/users/shyamkumar/Desktop/movie-data.csv")
+
+ratings = lines.map(lambda x:(x.split("\t")[2],1))
+
+result = ratings.reduceByKey(lambda x,y:x+y).collect()
+
+for a in result:
+    print(a)
+
+
+Customer who have spent the most:-
+====================================
+
+from pyspark import SparkContext
+
+sc= SparkContext("local[*]","customer_orders")
+
+rdd1 = sc.textFile("C:/Users/Shyamkumar/Desktop/Bigdata/customer.csv")
+
+rdd2 = rdd1.map(lambda x:(x.split(" ")[0], float(x.split(" ")[2])))
+
+rdd3 = rdd2.reduceByKey(lambda x,y:x+y)
+
+rdd4 = rdd3.sortBy(lambda x:x[1], False)
+
+result = rdd4.collect()
+
+for a in result:
+    print(a)
